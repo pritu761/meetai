@@ -13,12 +13,13 @@ import {
   FormMessage
 } from "@/components/ui/form"
 import { useForm } from "react-hook-form"
-import { ChromeIcon, GithubIcon, OctagonAlertIcon } from "lucide-react"
+import { OctagonAlertIcon } from "lucide-react"
 import Link from "next/link"
 import { authClient } from "@/lib/auth-client"
 import { useRouter } from "next/dist/client/components/navigation"
 import React from "react"
 import { Alert } from "@/components/ui/alert"
+import {FaGithub, FaGoogle} from "react-icons/fa"
 
 const formSchema = z.object({
   name: z.string().min(1, { message: "Name is required" }),
@@ -155,13 +156,18 @@ export const SignUpView = () => {
                     </div>
                   </div>
                   <div className="grid grid-cols-2 gap-4 w-full">
-                    <Button variant="outline" disabled={pending}>
-                      <ChromeIcon className="mr-2 h-4 w-4" />
-                      Google
+                    <Button type="button" variant="outline" 
+                    onClick={() => authClient.signIn.social({
+                      provider: "google",
+                    })} disabled={pending}>
+                      <FaGoogle className="mr-2 h-4 w-4" />
+                      
                     </Button>
-                    <Button variant="outline" disabled={pending}>
-                      <GithubIcon className="mr-2 h-4 w-4" />
-                      GitHub
+                    <Button type="button" variant="outline" disabled={pending} onClick={() => authClient.signIn.social({
+                      provider: "github",
+                    })}>
+                      <FaGithub className="mr-2 h-4 w-4" />
+                      
                     </Button>
                   </div>
                 </CardFooter>
