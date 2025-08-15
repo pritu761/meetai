@@ -4,7 +4,7 @@ import Image from "next/image"
 import { cn } from "@/lib/utils"
 import { BotIcon, StarIcon, VideoIcon } from "lucide-react"
 import { Separator } from "@/components/ui/separator"
-import{
+import {
     Sidebar,
     SidebarContent,
     SidebarHeader,
@@ -16,7 +16,7 @@ import{
     SidebarMenuButton,
 } from "@/components/ui/sidebar"
 import { usePathname } from "next/navigation"
-import DashboardUserButton from "./dashboard-user-button"
+import { DashboardUserButton } from "./dashboard-user-button"
 
 const firstSection = [{
     icon:VideoIcon,
