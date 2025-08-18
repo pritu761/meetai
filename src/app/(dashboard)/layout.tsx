@@ -6,16 +6,18 @@ interface Props {
     children: React.ReactNode;
 }
 
-const Layout = ({children}:Props) =>{
-    return(
-        <SidebarProvider>
-            <DashboardSidebar />
-            <main className="flex flex-col h-screen w-screen bg-muted ">
-                <DashboardNavbar />
-                {children}
-            </main>
-        </SidebarProvider>
-    )
-}
+const Layout = ({ children }: Props) => {
+  return (
+    <SidebarProvider>
+      <div className="flex h-screen w-screen bg-muted">
+        <DashboardSidebar />
+        <main className="flex flex-1 flex-col">
+          <DashboardNavbar />
+          <div className="flex-1 overflow-y-auto">{children}</div>
+        </main>
+      </div>
+    </SidebarProvider>
+  );
+};
 
 export default Layout;
