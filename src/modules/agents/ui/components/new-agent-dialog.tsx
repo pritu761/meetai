@@ -28,7 +28,7 @@ export const NewAgentDialog = ({
 
         return(
             <ResponsiveDialog 
-                title="Create New Agent"
+                title=""
                 open={open}
                 onOpenChange={onOpenChange}
             >

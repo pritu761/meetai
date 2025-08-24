@@ -15,7 +15,6 @@ export const AgentsListHeader = () => {
                 <h5 className="font-medium text-xl">My Agents</h5>
                 <Button onClick={() => setIsDialogOpen(true)}>
                     <PlusIcon className="mr-2 h-4 w-4" />
-                    Create Agent
                 </Button>
             </div>
         </div>

@@ -18,7 +18,7 @@ const t = initTRPC.create({
    */
   // transformer: superjson,
 });
-// Base router and procedure helpers
+// Base router and ure helpers
 export const createTRPCRouter = t.router;
 export const createCallerFactory = t.createCallerFactory;
 export const baseProcedure = t.procedure;
