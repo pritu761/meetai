@@ -3,12 +3,17 @@
 import { ErrorState } from "@/components/error-state"
 import { LoadingState } from "@/components/loading-state"
 import { Button } from "@/components/ui/button"
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { useTRPC } from "@/trpc/client"
 import { useSuspenseQuery } from "@tanstack/react-query"
-import { PlusIcon, Bot, Calendar } from "lucide-react"
+import { PlusIcon, Bot, Calendar, MessageSquare } from "lucide-react"
+import { useState } from "react"
 
-export const AgentsView = () => {
+
+interface AgentsViewProps {
+    onCreateAgent?: () => void;
+}
+
+export const AgentsView = ({ onCreateAgent }: AgentsViewProps) => {
     const trpc = useTRPC()
     const {data} = useSuspenseQuery(trpc.agents.getMany.queryOptions());
 
@@ -19,11 +24,11 @@ export const AgentsView = () => {
                     <Bot className="mx-auto h-12 w-12 text-muted-foreground mb-4" />
                     <h3 className="text-lg font-semibold mb-2">No agents yet</h3>
                     <p className="text-sm text-muted-foreground mb-6">
-                        Create your first agent to get started with AI-powered conversations.
+                        Get started with AI-powered conversations.
                     </p>
-                    <Button>
+                    <Button onClick={onCreateAgent}>
                         <PlusIcon className="mr-2 h-4 w-4" />
-                        Create Your First Agent
+                        New Agent
                     </Button>
                 </div>
             </div>
@@ -32,34 +37,27 @@ export const AgentsView = () => {
 
     return (
         <div className="px-4 md:px-8 pb-8">
-            <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+            <div className="space-y-3">
                 {data.map((agent: any) => (
-                    <Card key={agent.id} className="hover:shadow-md transition-shadow">
-                        <CardHeader>
-                            <CardTitle className="flex items-center gap-2">
-                                <Bot className="h-5 w-5" />
-                                {agent.name}
-                            </CardTitle>
-                            <CardDescription className="line-clamp-2">
-                                {agent.instructions?.substring(0, 100) || 'No instructions available'}
-                                {agent.instructions && agent.instructions.length > 100 && '...'}
-                            </CardDescription>
-                        </CardHeader>
-                        <CardContent>
-                            <div className="flex justify-between items-center">
-                                <div className="flex items-center gap-1 text-sm text-muted-foreground">
-                                    <Calendar className="h-4 w-4" />
-                                    <span>
-    {new Date(agent.createdAt).toLocaleDateString('en-US')}
-</span>
-
-                                </div>
-                                <Button variant="outline" size="sm">
-                                    View Details
-                                </Button>
+                    <div key={agent.id} className="flex items-center justify-between p-4 bg-white rounded-lg border hover:shadow-sm transition-shadow">
+                        <div className="flex items-center gap-3">
+                            <div className="w-10 h-10 rounded-full bg-gray-100 flex items-center justify-center text-lg">
+                                {agent.avatar ? (
+                                    <span className="text-lg">{agent.avatar}</span>
+                                ) : (
+                                    <Bot className="h-5 w-5 text-gray-600" />
+                                )}
                             </div>
-                        </CardContent>
-                    </Card>
+                            <div>
+                                <h3 className="font-medium text-gray-900">{agent.name}</h3>
+                                <p className="text-sm text-gray-500">{agent.instructions}</p>
+                            </div>
+                        </div>
+                        <div className="flex items-center gap-2 text-sm text-gray-500">
+                            <MessageSquare className="h-4 w-4" />
+                            <span>{agent.meetingCount || 0} meetings</span>
+                        </div>
+                    </div>
                 ))}
             </div>
         </div>
@@ -67,9 +65,24 @@ export const AgentsView = () => {
 }
 
 export const AgentsViewLoading = () => {
-    return <LoadingState 
-    title="Loading Agents"
-    description="This may take a few moments"/>
+    return (
+        <div className="px-4 md:px-8 pb-8">
+            <div className="space-y-3">
+                {[...Array(3)].map((_, i) => (
+                    <div key={i} className="flex items-center justify-between p-4 bg-white rounded-lg border animate-pulse">
+                        <div className="flex items-center gap-3">
+                            <div className="w-10 h-10 rounded-full bg-gray-200"></div>
+                            <div>
+                                <div className="h-4 bg-gray-200 rounded w-24 mb-2"></div>
+                                <div className="h-3 bg-gray-200 rounded w-32"></div>
+                            </div>
+                        </div>
+                        <div className="h-4 bg-gray-200 rounded w-20"></div>
+                    </div>
+                ))}
+            </div>
+        </div>
+    )
 }
 
 export const AgentsViewError = () => {
