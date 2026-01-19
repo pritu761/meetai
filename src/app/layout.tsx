@@ -5,6 +5,7 @@ import "./globals.css";
 import { Inter } from "next/font/google";
 import { TRPCReactProvider } from "@/trpc/client";
 import { Toaster } from "@/components/ui/sonner";
+import {NuqsAdapter} from "nuqs/adapters/next"
 
 export const metadata: Metadata = {
   title: "Create Next App",
@@ -20,16 +21,18 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <TRPCReactProvider>
-       <html lang="en">
+    <html lang="en" suppressHydrationWarning>
       <body
         className={`${inter.className}  antialiased`}
+        suppressHydrationWarning
       >
-        <Toaster/>
-        {children}
+        <NuqsAdapter>
+          <TRPCReactProvider>
+            <Toaster/>
+            {children}
+          </TRPCReactProvider>
+        </NuqsAdapter>
       </body>
     </html>
-    </TRPCReactProvider>
-
   );
 }
