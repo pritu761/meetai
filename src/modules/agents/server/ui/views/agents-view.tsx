@@ -12,6 +12,7 @@ import { DataTable } from "@/modules/agents/ui/components/data-table"
 import { columns } from "@/modules/agents/ui/components/columns"
 import { EmptyState } from "@/components/empty-state"
 import { DataPagination } from "@/modules/agents/ui/components/data-pagination"
+import { useRouter } from "next/navigation"
 
 
 interface AgentsViewProps {
@@ -19,6 +20,7 @@ interface AgentsViewProps {
 }
 
 export const AgentsView = ({ onCreateAgent }: AgentsViewProps) => {
+    const router = useRouter();
     const [filters, setFilters] = useAgentsFilters();
     const trpc = useTRPC()
     
@@ -41,7 +43,11 @@ export const AgentsView = ({ onCreateAgent }: AgentsViewProps) => {
 
     return (
         <div className="flex-1 pb-4 px-4 md:px-8 flex flex-col gap-y-4">
-            <DataTable data={data.items} columns={columns} />
+            <DataTable 
+                data={data.items} 
+                columns={columns} 
+                onRowClick={(row) => router.push(`/agents/${row.original.id}`)}
+            />
             <DataPagination 
                 page={filters.page}
                 totalPages={data.totalPages}
