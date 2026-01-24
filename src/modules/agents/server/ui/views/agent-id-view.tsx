@@ -3,9 +3,14 @@ import { ErrorState } from "@/components/error-state"
 import { GeneratedAvatar } from "@/components/generated-avatar"
 import { AgentIdViewHeader } from "@/modules/agents/ui/components/agent-id-view-header"
 import { useTRPC } from "@/trpc/client"
-import { useSuspenseQuery } from "@tanstack/react-query"
+import { useMutation, useQueryClient, useSuspenseQuery } from "@tanstack/react-query"
 import { VideoIcon } from "lucide-react"
 import { Badge } from "@/components/ui/badge"
+import { useRouter } from "next/navigation"
+import { toast } from "sonner"
+import { useConfirm } from "@/hooks/use-confirm"
+import { UpdateAgentDialog } from "@/modules/agents/ui/components/update-agent-dialog"
+import { useState } from "react"
 
 interface Props {
     agentId: string
@@ -13,15 +18,56 @@ interface Props {
 
 export const AgentIdView = ({agentId}: Props) => {
     const trpc = useTRPC()
+    const router = useRouter();
+    const queryClient = useQueryClient();
     const {data} = useSuspenseQuery(trpc.agents.getOne.queryOptions({id: agentId}))
+    const [isUpdateDialogOpen, setIsUpdateDialogOpen] = useState(false);
+
+    const removeAgent = useMutation(trpc.agents.remove.mutationOptions({
+        onSuccess: async () => {
+            await queryClient.invalidateQueries(trpc.agents.getMany.queryOptions({}));
+            router.push("/agents");
+            //INVALIDATE FREE USER USAGE
+            router.push("/agents")
+        },
+        onError: (error) => {
+            toast.error(error.message);
+        }
+
+    }))
+
+    const [RemoveConfirmation, confirmRemove] = useConfirm("Delete Agent", "Are you sure you want to delete this agent? This action cannot be undone."); 
+
+    const handleRemoveAgent =  async () => {
+        const ok = await confirmRemove();
+        if(!ok){
+          return
+        }
+        await removeAgent.mutateAsync({id: agentId})
+    }
+
+    const handleEditAgent = () => {
+        setIsUpdateDialogOpen(true);
+    }
+
     return (
         <>
+        <RemoveConfirmation />
+        <UpdateAgentDialog 
+            open={isUpdateDialogOpen}
+            onOpenChange={setIsUpdateDialogOpen}
+            initialValues={{
+                id: data.id,
+                name: data.name,
+                instructions: data.instructions
+            }}
+        />
             <div className="flex-1 py-4 px-4 md:px-8 flex flex-col gap-y-4">
                 <AgentIdViewHeader
                 agentId={agentId}
                 agentName={data.name}
-                onEditAgent={() => {}}
-                onDeleteAgent={() => {}}
+                onEditAgent={handleEditAgent}
+                onDeleteAgent={handleRemoveAgent}
                 />
             </div>
             <div className="bg-white rounded-lg border">

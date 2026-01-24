@@ -43,7 +43,7 @@ export const ResponsiveDialog = ({
                 <DrawerContent>
                     <DrawerHeader>
                         <DrawerTitle>{title}</DrawerTitle>
-                        {description && <DrawerDescription className="bg-yellow-200 text-black">{description}</DrawerDescription>}
+                        {description && <DrawerDescription>{description}</DrawerDescription>}
                     </DrawerHeader>
                     <div className='p-4 overflow-auto flex-1'>
                         {children}
@@ -60,9 +60,11 @@ export const ResponsiveDialog = ({
 
     return (
         <Dialog open={open} onOpenChange={onOpenChange}>
-            <DialogTitle>{title}</DialogTitle>
-            {description && <DialogDescription className="bg-yellow-200 text-black">{description}</DialogDescription>}
-            <DialogContent>{children}</DialogContent>
+            <DialogContent>
+                <DialogTitle>{title}</DialogTitle>
+                {description && <DialogDescription>{description}</DialogDescription>}
+                {children}
+            </DialogContent>
         </Dialog>
     );
 }
