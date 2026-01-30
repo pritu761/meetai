@@ -4,7 +4,7 @@ import { ColumnDef } from "@tanstack/react-table"
 import { GeneratedAvatar } from "@/components/generated-avatar"
 import { CornerDownRightIcon, CalendarIcon, Clock } from "lucide-react"
 import { Badge } from "@/components/ui/badge"
-import { formatDistanceToNow } from "date-fns"
+import { formatDistanceToNow, format } from "date-fns"
 
 export type Meeting = {
   id: string
@@ -62,14 +62,17 @@ export const columns: ColumnDef<Meeting>[] = [
   {
     accessorKey: "startDate",
     header: "Start Date",
-    cell: ({row}) => (
-      <div className="flex items-center gap-x-2">
-        <CalendarIcon className="size-4 text-muted-foreground" />
-        <span className="text-sm">
-          {new Date(row.original.startDate).toLocaleDateString()} at {new Date(row.original.startDate).toLocaleTimeString()}
-        </span>
-      </div>
-    ),
+    cell: ({row}) => {
+      const date = new Date(row.original.startDate);
+      return (
+        <div className="flex items-center gap-x-2">
+          <CalendarIcon className="size-4 text-muted-foreground" />
+          <span className="text-sm">
+            {format(date, "MMM d, yyyy")} at {format(date, "h:mm a")}
+          </span>
+        </div>
+      );
+    },
   },
   {
     accessorKey: "createdAt",
