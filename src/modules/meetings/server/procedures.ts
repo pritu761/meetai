@@ -1,7 +1,7 @@
 import { db } from "@/db";
 import { meetings, agents } from "@/db/schema";
 import { baseProcedure, createTRPCRouter, protectedProcedure } from "@/trpc/init";
-import { meetingInsertSchema, meetingUpdateSchema } from "../schema";
+import { meetingsInsertSchema, meetingsUpdateSchema } from "../schema";
 import z from "zod";
 import { and, count, desc, eq, getTableColumns, ilike, sql } from "drizzle-orm";
 import { DEFAULT_PAGE, MAX_PAGE_SIZE, MIN_PAGE_SIZE , DEFAULT_PAGE_SIZE} from "@/constants";
@@ -9,7 +9,7 @@ import { TRPCError } from "@trpc/server";
 
 export const meetingsRouter = createTRPCRouter({
     update : protectedProcedure
-    .input(meetingUpdateSchema)
+    .input(meetingsUpdateSchema)
     .mutation(async({ctx, input}) => {
         const [updatedMeeting] = await db
         .update(meetings)
@@ -18,6 +18,8 @@ export const meetingsRouter = createTRPCRouter({
             eq(meetings.id, input.id),
             eq(meetings.userId, ctx.auth.user.id)
         )).returning();
+
+        //TODO: Create stream Call, Upsert Stream User
        if(!updatedMeeting){
         throw new TRPCError({
             code : "NOT_FOUND",
@@ -113,9 +115,19 @@ export const meetingsRouter = createTRPCRouter({
         }).from(meetings).where(eq(meetings.id, input.id));
         return existingMeeting;
     }),
-    create : protectedProcedure.input(meetingInsertSchema).mutation(async({input, ctx}: {input: any, ctx: any}) => {
+    create : protectedProcedure.input(meetingsInsertSchema).mutation(async({input, ctx}) => {
+        console.log("=== CREATE MEETING DEBUG ===");
+        console.log("Input received:", JSON.stringify(input, null, 2));
+        console.log("User ID:", ctx.auth.user.id);
+        console.log("StartDate type:", typeof input.startDate, input.startDate);
+        console.log("EndDate type:", typeof input.endDate, input.endDate);
+        
         const [createdMeeting] = await db.insert(meetings).values({
-            ...input,
+            name: input.name,
+            agentId: input.agentId,
+            instructions: input.instructions,
+            startDate: input.startDate,
+            endDate: input.endDate,
             userId: ctx.auth.user.id,
         }).returning();
         return createdMeeting;

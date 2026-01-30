@@ -1,25 +1,45 @@
 import MeetingsView, { MeetingsViewError, MeetingsViewLoading } from "@/modules/meetings/ui/views/meetings-view";
 import { getQueryClient, trpc } from "@/trpc/server";
-import { HydrationBoundary, QueryClient } from "@tanstack/react-query";
+import { HydrationBoundary, dehydrate } from "@tanstack/react-query";
 import { Suspense } from "react";
 import { ErrorBoundary } from "react-error-boundary";
+import { MeetingsListHeader } from "@/modules/meetings/ui/components/meetings-list-header";
+import { redirect } from "next/navigation";
+import { headers } from "next/headers";
+import { auth } from "@/lib/auth";
+import { SearchParams } from "nuqs";
+import { loadSearchParams } from "@/modules/meetings/params";
 
-const Page = () => {
-    const queryClient = getQueryClient();
-    void queryClient.prefetchQuery(trpc.meetings.getMany.queryOptions({}));
-    function dehydrate(queryClient: QueryClient): import("@tanstack/query-core").DehydratedState | null | undefined {
-        throw new Error("Function not implemented.");
+interface Props {
+  searchParams : Promise<SearchParams>
+}
+
+const Page = async ({searchParams}: Props) => {
+    const filters = await loadSearchParams(searchParams)
+    const session = await auth.api.getSession({
+        headers: await headers(),
+    });
+    
+    if (!session) {
+        redirect("/sign-up");
     }
+    
+    const queryClient = getQueryClient();
+    void queryClient.prefetchQuery(trpc.meetings.getMany.queryOptions({
+        ...filters
+    }));
 
     return (
-        <HydrationBoundary state={dehydrate(queryClient)}>
-            <Suspense fallback={<MeetingsViewLoading />}>
-            <ErrorBoundary fallbackRender={() => <MeetingsViewError />}>
-
-                <MeetingsView />
-            </ErrorBoundary>
-            </Suspense>
-        </HydrationBoundary>
+        <div>
+            <MeetingsListHeader />
+            <HydrationBoundary state={dehydrate(queryClient)}>
+                <Suspense fallback={<MeetingsViewLoading />}>
+                <ErrorBoundary fallback={<MeetingsViewError />}>
+                    <MeetingsView />
+                </ErrorBoundary>
+                </Suspense>
+            </HydrationBoundary>
+        </div>
     )
 };
 
