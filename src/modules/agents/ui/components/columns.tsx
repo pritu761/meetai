@@ -15,7 +15,7 @@ export type Agent = {
   instructions: string
 }
 
-export const columns: ColumnDef<AgentGetMany[number]>[] = [
+export const columns: ColumnDef<AgentGetMany>[] = [
   {
         accessorKey: "name",
         header: "Agent Name",
