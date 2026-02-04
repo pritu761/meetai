@@ -1,7 +1,7 @@
 "use client"
 
 import { ColumnDef } from "@tanstack/react-table"
-import { AgentGetMany, AgentGetOne } from "@/modules/agents/types"
+import { AgentGetMany } from "@/modules/agents/types"
 import { GeneratedAvatar } from "@/components/generated-avatar"
 import { CornerDownRightIcon, VideoIcon } from "lucide-react"
 import { Badge } from "@/components/ui/badge"
