@@ -2,39 +2,62 @@
 
 import { ColumnDef } from "@tanstack/react-table"
 import { GeneratedAvatar } from "@/components/generated-avatar"
-import { CornerDownRightIcon, CalendarIcon, Clock } from "lucide-react"
+import { CornerDownRightIcon, CalendarIcon, Clock, CircleCheckIcon, CircleXIcon, LoaderIcon, ClockArrowUpIcon, ClockFadingIcon } from "lucide-react"
 import { Badge } from "@/components/ui/badge"
 import { formatDistanceToNow, format } from "date-fns"
+import { cn } from "@/lib/utils"
+import { MeetingGetMany } from "../../types"
 
-export type Meeting = {
-  id: string
-  name: string
-  agentId: string
-  status: "pending" | "completed" | "cancelled" | "upcoming"
-  startDate: string | Date
-  endDate: string | Date
-  createdAt: string | Date
-  updatedAt: string | Date
-  instructions: string
-  userId: string
-  summary: string | null
-  transcriptUrl: string | null
-  recordingUrl: string | null
+
+function formatDuration(seconds: number) {
+  if (!Number.isFinite(seconds) || seconds < 0) return "No duration"
+  const roundedSeconds = Math.round(seconds)
+  const hours = Math.floor(roundedSeconds / 3600)
+  const minutes = Math.floor((roundedSeconds % 3600) / 60)
+  const parts: string[] = []
+  if (hours > 0) parts.push(`${hours}h`)
+  if (minutes > 0 || hours === 0) parts.push(`${minutes}m`)
+  return parts.join(" ")
 }
 
-export const columns: ColumnDef<Meeting>[] = [
+const statusIconMap = {
+  upcoming: ClockArrowUpIcon,
+  completed: CircleCheckIcon,
+  pending: LoaderIcon,
+  cancelled: CircleXIcon,
+  processing: LoaderIcon,
+}
+
+const statusColorMap = {
+  upcoming: "bg-yellow-500/20 text-yellow-800 border-yellow-800/5",
+  pending: "bg-blue-500/20 text-blue-800 border-blue-800/5",
+  completed: "bg-emerald-500/20 text-emerald-800 border-emerald-800/5",
+  cancelled: "bg-rose-500/20 text-rose-800 border-rose-800/5",
+  processing: "bg-gray-300/20 text-gray-800 border-gray-800/5",
+}
+export const columns: ColumnDef<MeetingGetMany>[] = [
   {
     accessorKey: "name",
     header: "Meeting Name",
     cell: ({row}) => (
       <div className="flex flex-col gap-y-1">
+        <span className="font-semibold capitalize">{row.original.name}</span>
+        
         <div className="flex items-center gap-x-2">
-          <GeneratedAvatar 
+          <div className="flex items-center gap-x-1">
+
+          <CornerDownRightIcon className="size-4 text-muted-foreground" />
+          <span className="text-sm text-muted-foreground max-w-[200px] truncate capitalize">
+            {row.original.agent.name}
+          </span>
+          </div>
+          <GeneratedAvatar
             variant="bottts"
-            seed={row.original.name}
-            className="size-8" 
-          />
-          <span className="font-semibold capitalize">{row.original.name}</span>
+            seed={row.original.agent.name}
+            className="size-4" />
+          <span className="text-sm text-muted-foreground">
+            {row.original.startDate ? format(new Date(row.original.startDate), "MMM d") : "Not started yet" }
+          </span>
         </div>
       </div>
     ),
@@ -43,17 +66,20 @@ export const columns: ColumnDef<Meeting>[] = [
     accessorKey: "status",
     header: "Status",
     cell: ({row}) => {
-      const statusColors = {
-        upcoming: "bg-blue-100 text-blue-700 border-blue-200",
-        pending: "bg-yellow-100 text-yellow-700 border-yellow-200",
-        completed: "bg-green-100 text-green-700 border-green-200",
-        cancelled: "bg-red-100 text-red-700 border-red-200",
-      }
+      const Icon = statusIconMap[row.original.status as keyof typeof statusIconMap]
       return (
         <Badge 
           variant="outline" 
-          className={statusColors[row.original.status as keyof typeof statusColors]}
+          className={cn(
+            "capitalize [&>svg]:size-4 text-muted-foreground",
+            statusColorMap[row.original.status as keyof typeof statusColorMap],
+          )}
         >
+          <Icon
+            className={cn(
+              row.original.status === "processing" && "animate-spin",
+            )}
+          />
           {row.original.status}
         </Badge>
       )
@@ -84,6 +110,21 @@ export const columns: ColumnDef<Meeting>[] = [
           {formatDistanceToNow(new Date(row.original.createdAt), { addSuffix: true })}
         </span>
       </div>
+    ),
+  },
+  {
+    accessorKey: "duration",
+    header: "Duration",
+    cell: ({ row }) => (
+      <Badge
+        variant="outline"
+        className="capitalize [&>svg]:size-4 flex items-center gap-x-2"
+      >
+        <ClockFadingIcon className="text-blue-700" />
+        {row.original.duration
+          ? formatDuration(row.original.duration)
+          : "No duration"}
+      </Badge>
     ),
   },
 ]
