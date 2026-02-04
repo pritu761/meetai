@@ -8,11 +8,12 @@ import { useTRPC } from "@/trpc/client"
 import { useSuspenseQuery } from "@tanstack/react-query"
 import { PlusIcon, Bot, Calendar, MessageSquare } from "lucide-react"
 import { useState } from "react"
-import { DataTable } from "@/modules/agents/ui/components/data-table"
+
 import { columns } from "@/modules/agents/ui/components/columns"
 import { EmptyState } from "@/components/empty-state"
 import { DataPagination } from "@/modules/agents/ui/components/data-pagination"
 import { useRouter } from "next/navigation"
+import { DataTable } from "@/components/data-table"
 
 
 interface AgentsViewProps {

@@ -57,7 +57,7 @@ export const meetingsRouter = createTRPCRouter({
                        .default(DEFAULT_PAGE_SIZE),
                 search : z.string().nullish(),
                 agentId : z.string().nullish(),
-                status : z.enum(["pending", "completed", "cancelled", "upcoming"]).nullish(),
+                status : z.enum(["pending", "completed", "cancelled", "upcoming", "processing"]).nullish(),
     }))
     .query(async({ctx, input}) =>{
         const { search, page, pageSize, agentId, status } = input;
@@ -69,8 +69,11 @@ export const meetingsRouter = createTRPCRouter({
         const data = await db
         .select({
             ...getTableColumns(meetings),
+            agent:agents,
+            duration: sql<number>`(EXTRACT(EPOCH FROM (ended_at - started_at)))`.as("duration"),
         })
         .from(meetings)
+        .innerJoin(agents, eq(meetings.agentId, agents.id))
         .where(
             and(
                 eq(meetings.userId, ctx.auth.user.id),
