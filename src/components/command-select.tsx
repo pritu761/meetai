@@ -25,6 +25,12 @@ export const CommandSelect = ({options,value,placeholder,className,onSelect, onS
     const [open, setOpen] = useState(false);
     const [searchValue, setSearchValue] = useState("");
     const selectedOption = options.find((option) => option.id === value);
+
+
+    const handleClose = (value: boolean) => {
+      onSearch?.("");
+      setOpen(value);
+    }
     return(
         <>
         <Button type="button" variant="outline" className={cn("h-9 justify-between px-2",!selectedOption && "text-muted-foreground", className)} onClick={() => setOpen(true)}>
@@ -33,7 +39,7 @@ export const CommandSelect = ({options,value,placeholder,className,onSelect, onS
             </div>
             <ChevronsUpDownIcon className="ml-2 h-4 w-4 shrink-0 opacity-50" />
         </Button>
-        <CommandResponsiveDialog open={open} onOpenChange={setOpen} shouldFilter={!onSearch}>
+        <CommandResponsiveDialog open={open} onOpenChange={handleClose} shouldFilter={!onSearch}>
             <CommandInput placeholder="Search.." onValueChange={onSearch} />
               <CommandEmpty>
                 <span className="text-muted-foreground text-sm"> No results found.</span>
