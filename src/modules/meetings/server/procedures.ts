@@ -6,6 +6,7 @@ import z from "zod";
 import { and, count, desc, eq, getTableColumns, ilike, sql } from "drizzle-orm";
 import { DEFAULT_PAGE, MAX_PAGE_SIZE, MIN_PAGE_SIZE , DEFAULT_PAGE_SIZE} from "@/constants";
 import { TRPCError } from "@trpc/server";
+import { MeetingStatus } from "../types";
 
 export const meetingsRouter = createTRPCRouter({
     update : protectedProcedure
@@ -57,7 +58,13 @@ export const meetingsRouter = createTRPCRouter({
                        .default(DEFAULT_PAGE_SIZE),
                 search : z.string().nullish(),
                 agentId : z.string().nullish(),
-                status : z.enum(["pending", "completed", "cancelled", "upcoming", "processing"]).nullish(),
+                status : z.enum([
+                    MeetingStatus.ACTIVE,
+                    MeetingStatus.COMPLETED,
+                    MeetingStatus.CANCELLED,
+                    MeetingStatus.UPCOMING,
+                    MeetingStatus.PROCESSING
+                ]).nullish(),
     }))
     .query(async({ctx, input}) =>{
         const { search, page, pageSize, agentId, status } = input;

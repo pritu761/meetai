@@ -2,7 +2,7 @@
 
 import { ColumnDef } from "@tanstack/react-table"
 import { GeneratedAvatar } from "@/components/generated-avatar"
-import { CornerDownRightIcon, CalendarIcon, Clock, CircleCheckIcon, CircleXIcon, LoaderIcon, ClockArrowUpIcon, ClockFadingIcon } from "lucide-react"
+import { CornerDownRightIcon, CalendarIcon, Clock, CircleCheckIcon, CircleXIcon, LoaderIcon, ClockArrowUpIcon, ClockFadingIcon, VideoIcon } from "lucide-react"
 import { Badge } from "@/components/ui/badge"
 import { formatDistanceToNow, format } from "date-fns"
 import { cn } from "@/lib/utils"
@@ -23,14 +23,14 @@ function formatDuration(seconds: number) {
 const statusIconMap = {
   upcoming: ClockArrowUpIcon,
   completed: CircleCheckIcon,
-  pending: LoaderIcon,
+  active: VideoIcon,
   cancelled: CircleXIcon,
   processing: LoaderIcon,
 }
 
 const statusColorMap = {
   upcoming: "bg-yellow-500/20 text-yellow-800 border-yellow-800/5",
-  pending: "bg-blue-500/20 text-blue-800 border-blue-800/5",
+  active: "bg-blue-500/20 text-blue-800 border-blue-800/5",
   completed: "bg-emerald-500/20 text-emerald-800 border-emerald-800/5",
   cancelled: "bg-rose-500/20 text-rose-800 border-rose-800/5",
   processing: "bg-gray-300/20 text-gray-800 border-gray-800/5",
