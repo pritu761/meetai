@@ -2,7 +2,7 @@ import { getQueryClient, trpc } from "@/trpc/server";
 import { HydrationBoundary, dehydrate } from "@tanstack/react-query";
 import { Suspense } from "react";
 import { ErrorBoundary } from "react-error-boundary";
-import { MeetingIdView, MeetingIdViewError } from "@/modules/meetings/ui/views/meeting-id-view";
+import { EditMeetingView, EditMeetingViewError } from "@/modules/meetings/ui/views/edit-meeting-view";
 import { headers } from "next/headers";
 import { auth } from "@/lib/auth";
 import { redirect } from "next/navigation";
@@ -28,8 +28,8 @@ const Page = async ({params}: Props) => {
     return(
         <HydrationBoundary state={dehydrate(queryClient)}>
             <Suspense fallback={<div>Loading...</div>}>
-                <ErrorBoundary fallback={<MeetingIdViewError />}>
-                    <MeetingIdView meetingId={meetingId} />
+                <ErrorBoundary fallback={<EditMeetingViewError />}>
+                    <EditMeetingView meetingId={meetingId} />
                 </ErrorBoundary>
             </Suspense>
         </HydrationBoundary>

@@ -3,7 +3,7 @@ import { ErrorState } from "@/components/error-state"
 import { GeneratedAvatar } from "@/components/generated-avatar"
 import { useTRPC } from "@/trpc/client"
 import { useMutation, useQueryClient, useSuspenseQuery } from "@tanstack/react-query"
-import { CalendarIcon, Clock, Video } from "lucide-react"
+import { CalendarIcon, Clock, Video, Pencil } from "lucide-react"
 import { Badge } from "@/components/ui/badge"
 import { useRouter } from "next/navigation"
 import { toast } from "sonner"
@@ -80,6 +80,10 @@ export const MeetingIdView = ({meetingId}: Props) => {
                     <div className="flex gap-2">
                         <Button variant="outline" onClick={() => router.push("/meetings")}>
                             Back
+                        </Button>
+                        <Button variant="outline" onClick={() => router.push(`/meetings/${meetingId}/edit`)}>
+                            <Pencil className="mr-2 size-4" />
+                            Edit
                         </Button>
                         <Button variant="destructive" onClick={handleRemoveMeeting}>
                             Delete
