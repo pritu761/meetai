@@ -128,7 +128,8 @@ export const meetingsRouter = createTRPCRouter({
         .innerJoin(agents, eq(meetings.agentId, agents.id))
         .where(and(
             eq(meetings.id, input.id),
-            eq(meetings.userId, ctx.auth.user.id)
+            eq(meetings.userId, ctx.auth.user.id),
+            eq(agents.userId, ctx.auth.user.id)
         ));
             if(!existingMeeting){
                 throw new TRPCError({
