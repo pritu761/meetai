@@ -1,0 +1,25 @@
+import { EmptyState } from "@/components/empty-state";
+import { Button } from "@/components/ui/button";
+import { BanIcon, VideoIcon } from "lucide-react";
+
+export const UpcomingState = () => {
+    return (
+        <div className="bg-white rounded-lg px-4 py-5 flex flex-col gap-y-6 items-center justify-center">
+            <EmptyState
+                image="/upcoming.svg"
+                title="Not started yet"
+                description="Once you start this meeting, a summary will appear here"
+            />
+            <div className="flex flex-col-reverse sm:flex-row justify-center items-center gap-2 w-full">
+                <Button variant="outline">
+                    <BanIcon />
+                    Cancel meeting
+                </Button>
+                <Button className="bg-green-600 text-white hover:bg-green-600/90">
+                    <VideoIcon />
+                    Start meeting
+                </Button>
+            </div>
+        </div>
+    );
+};
