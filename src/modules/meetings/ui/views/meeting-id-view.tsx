@@ -8,10 +8,12 @@ import { Badge } from "@/components/ui/badge"
 import { useRouter } from "next/navigation"
 import { toast } from "sonner"
 import { useConfirm } from "@/hooks/use-confirm"
-import { useState } from "react"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { format } from "date-fns"
+import { CancelledState } from "../components/cancelled-state"
+import { ProcessingState } from "../components/processing-state"
+import { UpcomingState } from "../components/upcoming-state"
 
 interface Props {
     meetingId: string
@@ -29,7 +31,7 @@ export const MeetingIdView = ({meetingId}: Props) => {
             toast.success("Meeting deleted successfully");
             router.push("/meetings");
         },
-        onError: (error) => {
+        onError: () => {
             toast.error("Failed to delete meeting");
         }
     }))
@@ -54,6 +56,11 @@ export const MeetingIdView = ({meetingId}: Props) => {
         cancelled: "bg-red-100 text-red-700 border-red-200",
         processing: "bg-gray-100 text-gray-700 border-gray-200",
     }
+
+    const isCancelled = data.status === "cancelled";
+    const isProcessing = data.status === "processing";
+    const isUpcoming = data.status === "upcoming";
+    
 
     return (
         <>
@@ -91,71 +98,76 @@ export const MeetingIdView = ({meetingId}: Props) => {
                     </div>
                 </div>
 
-                {/* Meeting Details */}
-                <Card>
-                    <CardHeader>
-                        <CardTitle>Meeting Details</CardTitle>
-                        <CardDescription>Information about this meeting</CardDescription>
-                    </CardHeader>
-                    <CardContent className="space-y-4">
-                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                            <div className="flex items-center gap-2">
-                                <CalendarIcon className="size-4 text-muted-foreground" />
-                                <div>
-                                    <p className="text-sm font-medium">Start Date</p>
-                                    <p className="text-sm text-muted-foreground">
-                                        {format(new Date(data.startDate), "PPP 'at' p")}
-                                    </p>
+                {isCancelled && <CancelledState />}
+                {isProcessing && <ProcessingState />}
+                {isUpcoming && <UpcomingState />}
+
+                {!isCancelled && !isProcessing && !isUpcoming && (
+                    <Card>
+                        <CardHeader>
+                            <CardTitle>Meeting Details</CardTitle>
+                            <CardDescription>Information about this meeting</CardDescription>
+                        </CardHeader>
+                        <CardContent className="space-y-4">
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                <div className="flex items-center gap-2">
+                                    <CalendarIcon className="size-4 text-muted-foreground" />
+                                    <div>
+                                        <p className="text-sm font-medium">Start Date</p>
+                                        <p className="text-sm text-muted-foreground">
+                                            {format(new Date(data.startDate), "PPP 'at' p")}
+                                        </p>
+                                    </div>
+                                </div>
+                                <div className="flex items-center gap-2">
+                                    <Clock className="size-4 text-muted-foreground" />
+                                    <div>
+                                        <p className="text-sm font-medium">End Date</p>
+                                        <p className="text-sm text-muted-foreground">
+                                            {format(new Date(data.endDate), "PPP 'at' p")}
+                                        </p>
+                                    </div>
                                 </div>
                             </div>
-                            <div className="flex items-center gap-2">
-                                <Clock className="size-4 text-muted-foreground" />
-                                <div>
-                                    <p className="text-sm font-medium">End Date</p>
-                                    <p className="text-sm text-muted-foreground">
-                                        {format(new Date(data.endDate), "PPP 'at' p")}
-                                    </p>
-                                </div>
-                            </div>
-                        </div>
 
-                        <div>
-                            <p className="text-sm font-medium mb-2">Instructions</p>
-                            <p className="text-sm text-muted-foreground whitespace-pre-wrap">
-                                {data.instructions}
-                            </p>
-                        </div>
-
-                        {data.summary && (
                             <div>
-                                <p className="text-sm font-medium mb-2">Summary</p>
+                                <p className="text-sm font-medium mb-2">Instructions</p>
                                 <p className="text-sm text-muted-foreground whitespace-pre-wrap">
-                                    {data.summary}
+                                    {data.instructions}
                                 </p>
                             </div>
-                        )}
 
-                        {(data.recordingUrl || data.transcriptUrl) && (
-                            <div className="flex gap-2">
-                                {data.recordingUrl && (
-                                    <Button variant="outline" asChild>
-                                        <a href={data.recordingUrl} target="_blank" rel="noopener noreferrer">
-                                            <Video className="mr-2 size-4" />
-                                            View Recording
-                                        </a>
-                                    </Button>
-                                )}
-                                {data.transcriptUrl && (
-                                    <Button variant="outline" asChild>
-                                        <a href={data.transcriptUrl} target="_blank" rel="noopener noreferrer">
-                                            View Transcript
-                                        </a>
-                                    </Button>
-                                )}
-                            </div>
-                        )}
-                    </CardContent>
-                </Card>
+                            {data.summary && (
+                                <div>
+                                    <p className="text-sm font-medium mb-2">Summary</p>
+                                    <p className="text-sm text-muted-foreground whitespace-pre-wrap">
+                                        {data.summary}
+                                    </p>
+                                </div>
+                            )}
+
+                            {(data.recordingUrl || data.transcriptUrl) && (
+                                <div className="flex gap-2">
+                                    {data.recordingUrl && (
+                                        <Button variant="outline" asChild>
+                                            <a href={data.recordingUrl} target="_blank" rel="noopener noreferrer">
+                                                <Video className="mr-2 size-4" />
+                                                View Recording
+                                            </a>
+                                        </Button>
+                                    )}
+                                    {data.transcriptUrl && (
+                                        <Button variant="outline" asChild>
+                                            <a href={data.transcriptUrl} target="_blank" rel="noopener noreferrer">
+                                                View Transcript
+                                            </a>
+                                        </Button>
+                                    )}
+                                </div>
+                            )}
+                        </CardContent>
+                    </Card>
+                )}
             </div>
         </>
     )
