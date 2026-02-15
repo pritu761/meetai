@@ -100,7 +100,7 @@ export const MeetingIdView = ({meetingId}: Props) => {
 
                 {isCancelled && <CancelledState />}
                 {isProcessing && <ProcessingState />}
-                {isUpcoming && <UpcomingState />}
+                {isUpcoming && <UpcomingState meetingId={meetingId} />}
 
                 {!isCancelled && !isProcessing && !isUpcoming && (
                     <Card>
