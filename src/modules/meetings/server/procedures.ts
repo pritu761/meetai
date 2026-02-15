@@ -7,8 +7,63 @@ import { and, count, desc, eq, getTableColumns, ilike, sql } from "drizzle-orm";
 import { DEFAULT_PAGE, MAX_PAGE_SIZE, MIN_PAGE_SIZE , DEFAULT_PAGE_SIZE} from "@/constants";
 import { TRPCError } from "@trpc/server";
 import { MeetingStatus } from "../types";
+import { streamVideo } from "@/lib/stream-video";
+import { generateAvatarUri } from "@/lib/create-avatar";
+
 
 export const meetingsRouter = createTRPCRouter({
+    generateToken: protectedProcedure.mutation(async({ctx}) => {
+        await streamVideo.upsertUsers([{
+            id: ctx.auth.user.id,
+            name: ctx.auth.user.name || "Unknown User",
+            image: ctx.auth.user.image ??
+            generateAvatarUri({
+                seed: ctx.auth.user.name || ctx.auth.user.id,
+                variant: "initials",
+            })
+        }]);
+        const expirationTime = Math.floor(Date.now() / 1000) + 60 * 60; // Token valid for 1 hour
+        const issuedAtTime = Math.floor(Date.now() / 1000);
+        const token = streamVideo.generateUserToken({
+            user_id: ctx.auth.user.id,
+            exp: expirationTime,
+            iat: issuedAtTime
+        });
+        return token;
+    }),
+    updateStatus: protectedProcedure
+    .input(z.object({
+        id: z.string().min(1),
+        status: z.enum([
+            MeetingStatus.ACTIVE,
+            MeetingStatus.COMPLETED,
+            MeetingStatus.CANCELLED,
+            MeetingStatus.UPCOMING,
+            MeetingStatus.PROCESSING
+        ])
+    }))
+    .mutation(async ({ ctx, input }) => {
+        const [updatedMeeting] = await db
+        .update(meetings)
+        .set({
+            status: input.status,
+            updatedAt: new Date(),
+        })
+        .where(and(
+            eq(meetings.id, input.id),
+            eq(meetings.userId, ctx.auth.user.id)
+        ))
+        .returning();
+
+        if (!updatedMeeting) {
+            throw new TRPCError({
+                code: "NOT_FOUND",
+                message: "Meeting not found",
+            });
+        }
+
+        return updatedMeeting;
+    }),
     update : protectedProcedure
     .input(meetingsUpdateSchema)
     .mutation(async({ctx, input}) => {
@@ -21,6 +76,50 @@ export const meetingsRouter = createTRPCRouter({
         )).returning();
 
         //TODO: Create stream Call, Upsert Stream User
+
+        const call = streamVideo.video.call("default", updatedMeeting.id);
+        await call.create({
+            data:{
+                created_by_id: ctx.auth.user.id,
+                custom: {
+                    meetingId: updatedMeeting.id,
+                    meetingName: updatedMeeting.name,
+                },
+                settings_override: {
+                    transcription: {
+                        language:"en",
+                        mode:"auto-on",
+                        closed_caption_mode:"auto-on",
+                    },
+                    recording: {
+                        mode:"auto-on",
+                        quality:"1080p",
+                    }
+                }
+            }
+        });
+
+        const [existingAgent] = await db
+        .select()
+        .from(agents)
+        .where(eq(agents.id, updatedMeeting.agentId));
+
+         if(!existingAgent){
+            throw new TRPCError({
+                code : "NOT_FOUND",
+                message : "Associated agent not found"
+            })
+         }
+
+        await streamVideo.upsertUsers([{
+            id: existingAgent.id,
+            name: existingAgent.name,
+            role: "user",
+            image: generateAvatarUri({
+                seed: existingAgent.name,
+                variant: "botttsNeutral",
+            })
+        }])
        if(!updatedMeeting){
         throw new TRPCError({
             code : "NOT_FOUND",

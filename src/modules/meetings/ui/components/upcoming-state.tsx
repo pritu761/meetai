@@ -1,8 +1,13 @@
 import { EmptyState } from "@/components/empty-state";
 import { Button } from "@/components/ui/button";
+import Link from "next/link";
 import { BanIcon, VideoIcon } from "lucide-react";
 
-export const UpcomingState = () => {
+interface Props {
+    meetingId: string;
+}
+
+export const UpcomingState = ({ meetingId }: Props) => {
     return (
         <div className="bg-white rounded-lg px-4 py-5 flex flex-col gap-y-6 items-center justify-center">
             <EmptyState
@@ -15,9 +20,11 @@ export const UpcomingState = () => {
                     <BanIcon />
                     Cancel meeting
                 </Button>
-                <Button className="bg-green-600 text-white hover:bg-green-600/90">
-                    <VideoIcon />
-                    Start meeting
+                <Button className="bg-green-600 text-white hover:bg-green-600/90" asChild>
+                    <Link href={`/call/${meetingId}`}>
+                        <VideoIcon />
+                        Start meeting
+                    </Link>
                 </Button>
             </div>
         </div>
