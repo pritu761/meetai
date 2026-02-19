@@ -12,12 +12,14 @@ import { CallConnect } from "./call-connect";
 interface Props {
     meetingId: string;
     meetingName: string;
+    agentId?: string;
+    instructions?: string;
 }
 
-export const CallProvider = ({ meetingId, meetingName }: Props) => {
-    const {data, isPending} = authClient.useSession();
+export const CallProvider = ({ meetingId, meetingName, agentId, instructions }: Props) => {
+    const { data, isPending } = authClient.useSession();
 
-    if(!data || isPending) {
+    if (!data || isPending) {
         return (
             <div className="flex items-center justify-center h-screen bg-radial from-sidebar-accent-background">
                 <LoaderIcon className="animate-spin" />
@@ -29,6 +31,8 @@ export const CallProvider = ({ meetingId, meetingName }: Props) => {
         <CallConnect
             meetingId={meetingId}
             meetingName={meetingName}
+            agentId={agentId}
+            instructions={instructions}
             userId={data.user.id}
             userName={data.user.name ?? "User"}
             userImage={

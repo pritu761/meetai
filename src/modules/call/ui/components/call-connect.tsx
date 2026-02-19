@@ -13,6 +13,8 @@ import { useMutation } from "@tanstack/react-query";
 interface Props {
     meetingId: string;
     meetingName: string;
+    agentId?: string;
+    instructions?: string;
     userId: string;
     userName: string;
     userImage: string;
@@ -21,7 +23,7 @@ import "@stream-io/video-react-sdk/dist/css/styles.css";
 import { useTRPC } from "@/trpc/client";
 import { CallUI } from "./call-ui";
 
-export const CallConnect = ({ meetingId, meetingName, userId, userName, userImage }: Props) => {
+export const CallConnect = ({ meetingId, meetingName, agentId, instructions, userId, userName, userImage }: Props) => {
     const trpc = useTRPC();
     const { mutateAsync: generateToken } = useMutation(trpc.meetings.generateToken.mutationOptions());
 
@@ -75,7 +77,11 @@ export const CallConnect = ({ meetingId, meetingName, userId, userName, userImag
     return (
         <StreamVideo client={client}>
             <StreamCall call={call}>
-                <CallUI meetingName={meetingName} />
+                <CallUI
+                    meetingName={meetingName}
+                    agentId={agentId}
+                    instructions={instructions}
+                />
             </StreamCall>
         </StreamVideo>
     )
