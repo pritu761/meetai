@@ -1,5 +1,4 @@
-import { GoogleGenerativeAI } from "@google/generative-ai";
-import { NextRequest } from "next/server";
+﻿import { NextRequest } from "next/server";
 
 // This endpoint generates a token for the AI agent to join the call
 export async function POST(req: NextRequest) {
@@ -38,3 +37,4 @@ export async function POST(req: NextRequest) {
         );
     }
 }
+

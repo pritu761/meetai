@@ -1,9 +1,6 @@
-import { redirect } from "next/navigation";
+﻿import { redirect } from "next/navigation";
 import { auth } from "@/lib/auth";
 import { headers } from "next/headers";
-import { Button } from "@/components/ui/button";
-import { PlusIcon, Bot } from "lucide-react";
-import { get } from "http";
 import { getQueryClient, trpc } from "@/trpc/server";
 import { HydrationBoundary, dehydrate } from "@tanstack/react-query";
 import { DashboardStats } from "@/modules/dashboard/ui/components/dashboard-stats";
@@ -14,7 +11,7 @@ const Page = async () => {
   });
   
   if (!session) {
-    redirect("/sign-in");
+    redirect("/sign-up");
   }
   const queryClient = getQueryClient()
   void queryClient.prefetchQuery(trpc.agents.getMany.queryOptions({}))

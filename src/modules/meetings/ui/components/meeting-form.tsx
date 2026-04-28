@@ -1,4 +1,4 @@
-import { useMutation, useQueryClient, useQuery } from "@tanstack/react-query";
+﻿import { useMutation, useQueryClient, useQuery } from "@tanstack/react-query";
 import { meetingsInsertSchema, meetingsUpdateSchema } from "../../schema";
 import { useRouter } from "next/navigation";
 import { useForm } from "react-hook-form";
@@ -163,7 +163,7 @@ export const MeetingForm = ({onSuccess, onCancel, initialValues}: MeetingFormPro
                                 />
                             </FormControl>
                             <p className="text-sm text-muted-foreground">
-                                Not found what you're looking for?{" "}
+                                Not found what you&apos;re looking for?{" "}
                                 <button
                                     type="button"
                                     onClick={() => setIsAgentDialogOpen(true)}
@@ -251,3 +251,4 @@ export const MeetingForm = ({onSuccess, onCancel, initialValues}: MeetingFormPro
        </>
     )
 }
+

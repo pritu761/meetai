@@ -1,4 +1,4 @@
-import "@stream-io/video-react-sdk/dist/css/styles.css";
+﻿import "@stream-io/video-react-sdk/dist/css/styles.css";
 import type { ReactNode } from "react";
 
 interface Props {
@@ -7,7 +7,7 @@ interface Props {
 
 const CallLayout = ({ children }: Props) => {
     return (
-        <div className="h-screen bg-black">
+        <div className="h-screen w-screen overflow-hidden">
             {children}
         </div>
     );

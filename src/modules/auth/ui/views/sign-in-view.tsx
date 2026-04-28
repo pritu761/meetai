@@ -1,4 +1,4 @@
-"use client"
+﻿"use client"
 import { Card, CardContent, CardFooter, CardHeader, CardTitle } from "@/components/ui/card"
 import { z } from "zod"
 import { zodResolver } from "@hookform/resolvers/zod"
@@ -94,7 +94,7 @@ export const SignInView = () => {
                       <FormItem>
                         <FormLabel>Password</FormLabel>
                         <FormControl>
-                          <Input type="password" placeholder="•••••••" {...field} />
+                          <Input type="password" placeholder="â€¢â€¢â€¢â€¢â€¢â€¢â€¢" {...field} />
                         </FormControl>
                         <FormMessage />
                       </FormItem>
@@ -135,7 +135,7 @@ export const SignInView = () => {
                   </div>
                 </CardFooter>
                 <p className="text-center text-sm text-muted-foreground">
-                  Don't have an account?{" "}
+                  Don&apos;t have an account?{" "}
                   <Link href="/sign-up" className="font-semibold text-primary">
                     Sign up
                   </Link>
@@ -165,3 +165,4 @@ export const SignInView = () => {
     </div>
   );
 };
+

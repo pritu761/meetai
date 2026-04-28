@@ -28,7 +28,7 @@ export function useVoiceAgent({ agentId, instructions, enabled }: UseVoiceAgentP
                 const base64Audio = (reader.result as string).split(',')[1];
 
                 // Send to our server endpoint
-                const response = await fetch("/api/gemini/chat", {
+                const response = await fetch("/api/openrouter/chat", {
                     method: "POST",
                     headers: { "Content-Type": "application/json" },
                     body: JSON.stringify({
@@ -39,7 +39,7 @@ export function useVoiceAgent({ agentId, instructions, enabled }: UseVoiceAgentP
                 });
 
                 if (!response.ok) {
-                    throw new Error("Failed to get response from Gemini");
+                    throw new Error("Failed to get response from OpenRouter");
                 }
 
                 const data = await response.json();

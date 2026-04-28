@@ -1,4 +1,4 @@
-import { ReactNode,useState } from "react";
+﻿import { ReactNode,useState } from "react";
 import { ChevronsUpDownIcon } from "lucide-react";
 
 import {cn} from "@/lib/utils"
@@ -23,7 +23,7 @@ interface Props{
 
 export const CommandSelect = ({options,value,placeholder,className,onSelect, onSearch}:Props) => {
     const [open, setOpen] = useState(false);
-    const [searchValue, setSearchValue] = useState("");
+    
     const selectedOption = options.find((option) => option.id === value);
 
 

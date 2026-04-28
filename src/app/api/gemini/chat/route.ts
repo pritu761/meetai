@@ -1,68 +1,63 @@
-import { NextRequest } from "next/server";
-
-/**
- * Server-side proxy for Gemini Live API
- * This handles the WebSocket connection to Gemini on the server side
- * and provides a simpler HTTP streaming interface for the client
- */
+﻿import { NextRequest } from "next/server";
 
 export async function POST(req: NextRequest) {
     try {
-        const { text, agentId, instructions } = await req.json();
+        const body = await req.json();
+        const text = body.text;
+        const instructions = body.instructions || "You are a helpful AI assistant in a video call. Keep responses concise and natural.";
 
-        if (!text) {
+        if (!text || typeof text !== "string") {
             return Response.json({ error: "Missing text input" }, { status: 400 });
         }
 
-        const geminiApiKey = process.env.GEMINI_API_KEY;
-        if (!geminiApiKey) {
-            return Response.json({ error: "Gemini API key not configured" }, { status: 500 });
+        const openRouterApiKey = process.env.OPENROUTER_API_KEY;
+        if (!openRouterApiKey) {
+            return Response.json({ error: "API key not configured" }, { status: 500 });
         }
 
-        // Use the standard Gemini API (not Live API) for now
-        // This is more reliable and works from the browser
         const response = await fetch(
-            `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${geminiApiKey}`,
+            "https://openrouter.ai/api/v1/chat/completions",
             {
                 method: "POST",
                 headers: {
+                    "Authorization": `Bearer ${openRouterApiKey}`,
                     "Content-Type": "application/json",
+                    "HTTP-Referer": process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3000",
+                    "X-Title": "MeetAI",
                 },
                 body: JSON.stringify({
-                    contents: [
+                    model: "google/gemini-2.0-flash-001",
+                    messages: [
                         {
-                            parts: [
-                                {
-                                    text: `${instructions}\n\nUser: ${text}`,
-                                },
-                            ],
+                            role: "system",
+                            content: instructions,
+                        },
+                        {
+                            role: "user",
+                            content: text,
                         },
                     ],
-                    generationConfig: {
-                        temperature: 0.9,
-                        topK: 1,
-                        topP: 1,
-                        maxOutputTokens: 2048,
-                    },
+                    max_tokens: 1024,
+                    temperature: 0.7,
                 }),
             }
         );
 
         if (!response.ok) {
-            const error = await response.text();
-            console.error("[Gemini Proxy] API error:", error);
+            const errorBody = await response.text();
+            console.error("[AI Chat] API error:", response.status, errorBody);
             return Response.json(
-                { error: "Gemini API request failed", details: error },
+                { error: "AI service unavailable", details: errorBody },
                 { status: response.status }
             );
         }
 
         const data = await response.json();
-        const reply = data.candidates?.[0]?.content?.parts?.[0]?.text || "I couldn't generate a response.";
+        const reply = data.choices?.[0]?.message?.content || "I could not generate a response.";
 
         return Response.json({ reply });
     } catch (error) {
-        console.error("[Gemini Proxy] Error:", error);
+        console.error("[AI Chat] Error:", error);
         return Response.json(
             { error: "Failed to process request" },
             { status: 500 }

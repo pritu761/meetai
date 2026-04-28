@@ -1,4 +1,4 @@
-import {
+﻿import {
     CallEndedEvent,
     CallTranscriptionReadyEvent,
     CallSessionParticipantLeftEvent,
@@ -6,7 +6,7 @@ import {
     CallSessionStartedEvent,
 } from "@stream-io/node-sdk";
 
-import { and, eq, not } from "drizzle-orm"
+import { and, eq } from "drizzle-orm"
 import { db } from "@/db";
 import { agents, meetings } from "@/db/schema";
 import { streamVideo } from "@/lib/stream-video";

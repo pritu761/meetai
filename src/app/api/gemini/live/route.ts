@@ -1,9 +1,8 @@
-import { GoogleGenerativeAI } from "@google/generative-ai";
-import { NextRequest, NextResponse } from "next/server";
+﻿import { NextRequest, NextResponse } from "next/server";
 
 /**
- * Server-side endpoint for Gemini Live API
- * Handles real-time audio streaming using Google's SDK
+ * Server-side endpoint for AI Live API
+ * Handles real-time audio streaming
  */
 
 export const runtime = "nodejs";
@@ -17,54 +16,47 @@ export async function POST(req: NextRequest) {
             return NextResponse.json({ error: "Missing audio data" }, { status: 400 });
         }
 
-        const geminiApiKey = process.env.GEMINI_API_KEY;
-        if (!geminiApiKey) {
-            return NextResponse.json({ error: "Gemini API key not configured" }, { status: 500 });
+        const apiKey = process.env.OPENROUTER_API_KEY;
+        if (!apiKey) {
+            return NextResponse.json({ error: "API key not configured" }, { status: 500 });
         }
 
-        // Initialize Gemini SDK
-        const genAI = new GoogleGenerativeAI(geminiApiKey);
-
-        // Use the Live API model
-        const model = genAI.getGenerativeModel({
-            model: "gemini-2.5-flash-native-audio-preview-12-2025",
+        // Use OpenRouter REST API directly
+        const response = await fetch("https://openrouter.ai/api/v1/chat/completions", {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json",
+                "Authorization": `Bearer ${apiKey}`,
+            },
+            body: JSON.stringify({
+                model: "openai/gpt-4o-mini",
+                messages: [
+                    {
+                        role: "system",
+                        content: instructions || "You are a helpful AI assistant in a video call. Respond naturally and conversationally. Keep responses concise.",
+                    },
+                    {
+                        role: "user",
+                        content: "[Audio input received from call participant]",
+                    },
+                ],
+                max_tokens: 300,
+            }),
         });
 
-        // Start a chat session with audio
-        const chat = model.startChat({
-            history: [],
-            generationConfig: {
-                temperature: 0.9,
-                topK: 1,
-                topP: 1,
-                maxOutputTokens: 2048,
-            },
-        });
+        if (!response.ok) {
+            throw new Error(`API error: ${response.status}`);
+        }
 
-        // Send audio and get response
-        const result = await chat.sendMessage([
-            {
-                inlineData: {
-                    mimeType: "audio/pcm",
-                    data: audioData, // Base64 encoded audio
-                },
-            },
-            {
-                text: instructions || "You are a helpful AI assistant in a video call. Respond naturally and conversationally.",
-            },
-        ]);
+        const data = await response.json();
+        const text = data.choices?.[0]?.message?.content || "No response generated";
 
-        const response = await result.response;
-        const text = response.text();
-
-        // For now, return text response
-        // TODO: Implement audio response generation
         return NextResponse.json({
             text,
             sessionId: sessionId || Date.now().toString(),
         });
     } catch (error) {
-        console.error("[Gemini Live] Error:", error);
+        console.error("[AI Live] Error:", error);
         return NextResponse.json(
             {
                 error: "Failed to process audio",
