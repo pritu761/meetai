@@ -1,6 +1,5 @@
 import { pgTable, text, timestamp, boolean, pgEnum } from "drizzle-orm/pg-core";
 import { nanoid } from "nanoid";
-import { start } from "repl";
 
 export const planEnum = pgEnum("plan", ["free", "pro", "business"]);
 
