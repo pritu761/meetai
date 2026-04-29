@@ -11,13 +11,30 @@ export async function POST(req: NextRequest) {
     const rawBody = await req.text();
     const signature = req.headers.get("x-razorpay-signature");
 
-    if (RAZORPAY_WEBHOOK_SECRET && signature) {
+    if (!RAZORPAY_WEBHOOK_SECRET) {
+      if (process.env.NODE_ENV !== "development") {
+        return NextResponse.json(
+          { error: "Webhook secret is not configured" },
+          { status: 500 }
+        );
+      }
+    } else {
+      if (!signature) {
+        return NextResponse.json({ error: "Missing signature" }, { status: 400 });
+      }
+
       const expectedSignature = crypto
         .createHmac("sha256", RAZORPAY_WEBHOOK_SECRET)
         .update(rawBody)
         .digest("hex");
 
-      if (signature !== expectedSignature) {
+      const signatureBuffer = Buffer.from(signature, "utf8");
+      const expectedSignatureBuffer = Buffer.from(expectedSignature, "utf8");
+
+      if (
+        signatureBuffer.length !== expectedSignatureBuffer.length ||
+        !crypto.timingSafeEqual(signatureBuffer, expectedSignatureBuffer)
+      ) {
         return NextResponse.json({ error: "Invalid signature" }, { status: 400 });
       }
     }
