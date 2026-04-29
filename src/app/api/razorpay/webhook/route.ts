@@ -35,6 +35,8 @@ export async function POST(req: NextRequest) {
           await db
             .update(user)
             .set({
+              plan: planId,
+              planExpiry: expiryDate,
               updatedAt: new Date(),
             })
             .where(eq(user.id, userId));
