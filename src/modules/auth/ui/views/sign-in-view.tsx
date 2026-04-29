@@ -94,7 +94,7 @@ export const SignInView = () => {
                       <FormItem>
                         <FormLabel>Password</FormLabel>
                         <FormControl>
-                          <Input type="password" placeholder="â€¢â€¢â€¢â€¢â€¢â€¢â€¢" {...field} />
+                          <Input type="password" placeholder="•••••••" {...field} />
                         </FormControl>
                         <FormMessage />
                       </FormItem>
