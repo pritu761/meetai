@@ -15,8 +15,17 @@ export async function POST(req: NextRequest) {
       return Response.json({ error: "Missing signature" }, { status: 400 });
     }
 
-    const stripe = require("stripe")(process.env.STRIPE_SECRET_KEY);
-    
+    if (!process.env.STRIPE_SECRET_KEY) {
+      return Response.json({ error: "Stripe secret key not configured" }, { status: 500 });
+    }
+
+    let stripe;
+    try {
+      stripe = require("stripe")(process.env.STRIPE_SECRET_KEY);
+    } catch (error) {
+      console.error("[Webhook] Stripe SDK is unavailable:", error);
+      return Response.json({ error: "Stripe integration not available" }, { status: 500 });
+    }
     let event;
     try {
       event = stripe.webhooks.constructEvent(body, signature, STRIPE_WEBHOOK_SECRET);
