@@ -1,0 +1,217 @@
+"use client"
+  import { ErrorState } from "@/components/error-state"
+  import { GeneratedAvatar } from "@/components/generated-avatar"
+  import { useTRPC } from "@/trpc/client"
+  import { useMutation, useQueryClient, useSuspenseQuery, useState } from "@tanstack/react-query"
+  import { CalendarIcon, Clock, Video, Pencil, Sparkles } from "lucide-react"
+  import { Badge } from "@/components/ui/badge"
+  import { useRouter } from "next/navigation"
+  import { toast } from "sonner"
+  import { useConfirm } from "@/hooks/use-confirm"
+  import { Button } from "@/components/ui/button"
+  import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
+  import { format } from "date-fns"
+  import { CancelledState } from "../components/cancelled-state"
+  import { ProcessingState } from "../components/processing-state"
+  import { UpcomingState } from "../components/upcoming-state"
+
+interface Props {
+    meetingId: string
+}
+
+export const MeetingIdView = ({meetingId}: Props) => {
+    const trpc = useTRPC()
+    const router = useRouter();
+    const queryClient = useQueryClient();
+    const {data} = useSuspenseQuery(trpc.meetings.getOne.queryOptions({id: meetingId}))
+
+    const removeMeeting = useMutation(trpc.meetings.remove.mutationOptions({
+        onSuccess: async () => {
+            await queryClient.invalidateQueries(trpc.meetings.getMany.queryOptions({}));
+            toast.success("Meeting deleted successfully");
+            router.push("/meetings");
+        },
+        onError: () => {
+            toast.error("Failed to delete meeting");
+        }
+    }))
+
+    const [RemoveConfirmation, confirmRemove] = useConfirm(
+        "Delete Meeting", 
+        "Are you sure you want to delete this meeting? This action cannot be undone."
+    ); 
+
+    const handleRemoveMeeting = async () => {
+        const ok = await confirmRemove();
+        if(!ok){
+          return
+        }
+        await removeMeeting.mutateAsync({id: meetingId})
+    }
+
+    const statusColors = {
+        upcoming: "bg-blue-100 text-blue-700 border-blue-200",
+        active: "bg-yellow-100 text-yellow-700 border-yellow-200",
+        completed: "bg-green-100 text-green-700 border-green-200",
+        cancelled: "bg-red-100 text-red-700 border-red-200",
+        processing: "bg-gray-100 text-gray-700 border-gray-200",
+    }
+
+    const isCancelled = data.status === "cancelled";
+    const isProcessing = data.status === "processing";
+    const isUpcoming = data.status === "upcoming";
+    const [isGeneratingSummary, setIsGeneratingSummary] = useState(false);
+    
+    const generateMeetingSummary = async () => {
+      setIsGeneratingSummary(true);
+      try {
+        // In a real implementation, we would call an API to generate the summary
+        // For now, we'll simulate it by creating a simple summary from the meeting details
+        const summary = `Meeting "${data.name}" was held on ${format(new Date(data.startDate), "PPP")}. 
+        ${data.instructions || "No specific instructions were provided for this meeting."}
+        This meeting was marked as ${data.status}.`;
+        
+        // Update the meeting with the generated summary
+        await trpc.meetings.update.mutateAsync({
+          id: data.id,
+          summary
+        });
+        
+        toast.success("Meeting summary generated successfully");
+      } catch (error) {
+        console.error("Failed to generate meeting summary:", error);
+        toast.error("Failed to generate meeting summary");
+      } finally {
+        setIsGeneratingSummary(false);
+      }
+    };
+    
+    return (
+        <>
+            <RemoveConfirmation />
+            <div className="flex-1 py-4 px-4 md:px-8 flex flex-col gap-y-4">
+                {/* Header */}
+                <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-4">
+                        <GeneratedAvatar
+                            variant="bottts"
+                            seed={data.name}
+                            className="size-12" 
+                        />
+                        <div>
+                            <h1 className="text-2xl font-bold">{data.name}</h1>
+                            <Badge 
+                                variant="outline" 
+                                className={statusColors[data.status as keyof typeof statusColors]}
+                            >
+                                {data.status}
+                            </Badge>
+                        </div>
+                    </div>
+                     <div className="flex gap-2">
+                         <Button variant="outline" onClick={() => router.push("/meetings")}>
+                             Back
+                         </Button>
+                         <Button variant="outline" onClick={() => router.push(`/meetings/${meetingId}/edit`)}>
+                             <Pencil className="mr-2 size-4" />
+                             Edit
+                         </Button>
+                         {data.status === "completed" && !data.summary && (
+                           <Button 
+                             variant="outline" 
+                             onClick={generateMeetingSummary}
+                             disabled={isGeneratingSummary}
+                           >
+                             {isGeneratingSummary ? "Generating..." : "Generate Summary"}
+                             <Sparkles className="mr-2 h-4 w-4" />
+                           </Button>
+                         )}
+                         <Button variant="destructive" onClick={handleRemoveMeeting}>
+                             Delete
+                         </Button>
+                     </div>
+                </div>
+
+                {isCancelled && <CancelledState />}
+                {isProcessing && <ProcessingState />}
+                {isUpcoming && <UpcomingState meetingId={meetingId} />}
+
+                {!isCancelled && !isProcessing && !isUpcoming && (
+                    <Card>
+                        <CardHeader>
+                            <CardTitle>Meeting Details</CardTitle>
+                            <CardDescription>Information about this meeting</CardDescription>
+                        </CardHeader>
+                        <CardContent className="space-y-4">
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                <div className="flex items-center gap-2">
+                                    <CalendarIcon className="size-4 text-muted-foreground" />
+                                    <div>
+                                        <p className="text-sm font-medium">Start Date</p>
+                                        <p className="text-sm text-muted-foreground">
+                                            {format(new Date(data.startDate), "PPP 'at' p")}
+                                        </p>
+                                    </div>
+                                </div>
+                                <div className="flex items-center gap-2">
+                                    <Clock className="size-4 text-muted-foreground" />
+                                    <div>
+                                        <p className="text-sm font-medium">End Date</p>
+                                        <p className="text-sm text-muted-foreground">
+                                            {format(new Date(data.endDate), "PPP 'at' p")}
+                                        </p>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div>
+                                <p className="text-sm font-medium mb-2">Instructions</p>
+                                <p className="text-sm text-muted-foreground whitespace-pre-wrap">
+                                    {data.instructions}
+                                </p>
+                            </div>
+
+                            {data.summary && (
+                                <div>
+                                    <p className="text-sm font-medium mb-2">Summary</p>
+                                    <p className="text-sm text-muted-foreground whitespace-pre-wrap">
+                                        {data.summary}
+                                    </p>
+                                </div>
+                            )}
+
+                            {(data.recordingUrl || data.transcriptUrl) && (
+                                <div className="flex gap-2">
+                                    {data.recordingUrl && (
+                                        <Button variant="outline" asChild>
+                                            <a href={data.recordingUrl} target="_blank" rel="noopener noreferrer">
+                                                <Video className="mr-2 size-4" />
+                                                View Recording
+                                            </a>
+                                        </Button>
+                                    )}
+                                    {data.transcriptUrl && (
+                                        <Button variant="outline" asChild>
+                                            <a href={data.transcriptUrl} target="_blank" rel="noopener noreferrer">
+                                                View Transcript
+                                            </a>
+                                        </Button>
+                                    )}
+                                </div>
+                            )}
+                        </CardContent>
+                    </Card>
+                )}
+            </div>
+        </>
+    )
+}
+
+export const MeetingIdViewError = () => {
+    return (
+        <ErrorState
+            title="Error Loading Meeting"
+            description="There was an error loading the meeting details. Please try again later."
+        />
+    )
+}

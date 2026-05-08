@@ -1,0 +1,31 @@
+{
+  "version": 2,
+  "builds": [
+    {
+      "src": "package.json",
+      "use": "@vercel/next"
+    }
+  ],
+  "rewrites": [
+    { "source": "/api/(.*)", "destination": "/api/$1" }
+  ],
+  "env": {
+    "DATABASE_URL": "@datasource_url",
+    "BETTER_AUTH_SECRET": "@better_auth_secret",
+    "BETTER_AUTH_URL": "@better_auth_url",
+    "GITHUB_CLIENT_ID": "@github_client_id",
+    "GITHUB_CLIENT_SECRET": "@github_client_secret",
+    "GOOGLE_CLIENT_ID": "@google_client_id",
+    "GOOGLE_CLIENT_SECRET": "@google_client_secret",
+    "NEXT_PUBLIC_APP_URL": "@next_public_app_url",
+    "NEXT_PUBLIC_STREAM_VIDEO_API_KEY": "@next_public_stream_video_api_key",
+    "STREAM_VIDEO_SECRET_KEY": "@stream_video_secret_key",
+    "GEMINI_API_KEY": "@gemini_api_key",
+    "NEXT_PUBLIC_GEMINI_API_KEY": "@next_public_gemini_api_key",
+    "OPENROUTER_API_KEY": "@openrouter_api_key",
+    "NEXT_PUBLIC_OPENROUTER_API_KEY": "@next_public_openrouter_api_key",
+    "RAZORPAY_KEY_ID": "@razorpay_key_id",
+    "RAZORPAY_KEY_SECRET": "@razorpay_key_secret",
+    "RAZORPAY_WEBHOOK_SECRET": "@razorpay_webhook_secret"
+  }
+}
